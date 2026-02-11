@@ -1,0 +1,24 @@
+# API Service Railway Configuration
+services:
+  - name: analytics-api
+    build:
+      dockerfile: Dockerfile
+    deploy:
+      healthcheck:
+        path: /health
+        port: 8000
+    env:
+      - name: AUTH0_DOMAIN
+        value: ${AUTH0_DOMAIN}
+      - name: AUTH0_API_AUDIENCE
+        value: ${AUTH0_API_AUDIENCE}
+      - name: AWS_ACCESS_KEY_ID
+        value: ${AWS_ACCESS_KEY_ID}
+      - name: AWS_SECRET_ACCESS_KEY
+        value: ${AWS_SECRET_ACCESS_KEY}
+      - name: S3_BUCKET
+        value: ${S3_BUCKET}
+      - name: S3_REGION
+        value: ${S3_REGION:-us-east-1}
+      - name: LOG_LEVEL
+        value: ${LOG_LEVEL:-INFO}

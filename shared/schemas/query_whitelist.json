@@ -1,0 +1,72 @@
+{
+  "allowed_queries": [
+    {
+      "name": "select_all",
+      "pattern": "^SELECT\\s+\\*\\s+FROM\\s+(\\w+)",
+      "description": "Select all columns from a table",
+      "max_rows": 10000
+    },
+    {
+      "name": "select_columns",
+      "pattern": "^SELECT\\s+([\\w\\s,]+)\\s+FROM\\s+(\\w+)",
+      "description": "Select specific columns from a table",
+      "max_rows": 10000
+    },
+    {
+      "name": "count",
+      "pattern": "^SELECT\\s+COUNT\\(\\*\\)\\s+FROM\\s+(\\w+)",
+      "description": "Count rows in a table",
+      "max_rows": 1
+    },
+    {
+      "name": "aggregate",
+      "pattern": "^SELECT\\s+(SUM|AVG|MIN|MAX|COUNT)\\s*\\(",
+      "description": "Aggregate functions",
+      "max_rows": 1000
+    },
+    {
+      "name": "group_by",
+      "pattern": "^SELECT\\s+.+\\s+FROM\\s+(\\w+)\\s+GROUP\\s+BY",
+      "description": "Group by queries",
+      "max_rows": 5000
+    },
+    {
+      "name": "where_clause",
+      "pattern": "^SELECT\\s+.+\\s+FROM\\s+(\\w+)\\s+WHERE",
+      "description": "Queries with WHERE clause",
+      "max_rows": 5000
+    },
+    {
+      "name": "order_by",
+      "pattern": "^SELECT\\s+.+\\s+FROM\\s+(\\w+)\\s+ORDER\\s+BY",
+      "description": "Queries with ORDER BY",
+      "max_rows": 5000
+    },
+    {
+      "name": "limit",
+      "pattern": "^SELECT\\s+.+\\s+FROM\\s+(\\w+)\\s+LIMIT\\s+(\\d+)",
+      "description": "Queries with LIMIT clause",
+      "max_rows": 10000
+    }
+  ],
+  "blocked_patterns": [
+    "INSERT",
+    "UPDATE", 
+    "DELETE",
+    "DROP",
+    "CREATE",
+    "ALTER",
+    "TRUNCATE",
+    "EXEC",
+    "EXECUTE",
+    "UNION",
+    "--",
+    ";/*",
+    "xp_",
+    "sp_",
+    ";",
+    "@@"
+  ],
+  "max_query_length": 5000,
+  "max_execution_time_seconds": 30
+}

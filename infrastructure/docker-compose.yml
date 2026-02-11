@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  etl-service:
+    build:
+      context: ./etl-service
+      dockerfile: Dockerfile
+    container_name: etl-sync
+    environment:
+      - MSSQL_HOST=${MSSQL_HOST}
+      - MSSQL_PORT=${MSSQL_PORT:-1433}
+      - MSSQL_DATABASE=${MSSQL_DATABASE}
+      - MSSQL_USERNAME=${MSSQL_USERNAME}
+      - MSSQL_PASSWORD=${MSSQL_PASSWORD}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - DATABASE_URL=${DATABASE_URL}
+      - SYNC_INTERVAL_SECONDS=${SYNC_INTERVAL_SECONDS:-60}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - etl-data:/app/data
+    networks:
+      - analytics-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api-service:
+    build:
+      context: ./api-service
+      dockerfile: Dockerfile
+    container_name: analytics-api
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN}
+      - AUTH0_API_AUDIENCE=${AUTH0_API_AUDIENCE}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    networks:
+      - analytics-network
+    restart: unless-stopped
+    depends_on:
+      - etl-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: etl-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-etl}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-etlpassword}
+      - POSTGRES_DB=${POSTGRES_DB:-etl_state}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - analytics-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-etl} -d ${POSTGRES_DB:-etl_state}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  etl-data:
+  postgres-data:
+
+networks:
+  analytics-network:
+    driver: bridge

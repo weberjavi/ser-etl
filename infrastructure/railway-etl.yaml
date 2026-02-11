@@ -1,0 +1,35 @@
+# ETL Service Railway Configuration
+services:
+  - name: etl-sync
+    build:
+      dockerfile: Dockerfile
+    deploy:
+      restartPolicy:
+        maxRetries: 3
+    env:
+      - name: MSSQL_HOST
+        value: ${MSSQL_HOST}
+      - name: MSSQL_PORT
+        value: "1433"
+      - name: MSSQL_DATABASE
+        value: ${MSSQL_DATABASE}
+      - name: MSSQL_USERNAME
+        value: ${MSSQL_USERNAME}
+      - name: MSSQL_PASSWORD
+        value: ${MSSQL_PASSWORD}
+      - name: AWS_ACCESS_KEY_ID
+        value: ${AWS_ACCESS_KEY_ID}
+      - name: AWS_SECRET_ACCESS_KEY
+        value: ${AWS_SECRET_ACCESS_KEY}
+      - name: S3_BUCKET
+        value: ${S3_BUCKET}
+      - name: S3_REGION
+        value: ${S3_REGION:-us-east-1}
+      - name: SYNC_INTERVAL_SECONDS
+        value: "60"
+      - name: LOG_LEVEL
+        value: ${LOG_LEVEL:-INFO}
+      - name: DATABASE_URL
+        fromDatabase:
+          name: etl-state
+          property: connectionString
