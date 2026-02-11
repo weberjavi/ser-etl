@@ -11,11 +11,9 @@ class Config:
 
     # Required fields (no defaults) - must come first
     # SQL Server
-    mssql_host: str
     mssql_database: str
     mssql_username: str
     mssql_password: str
-    mssql_port: int
 
     # AWS S3
     aws_access_key_id: str
@@ -26,6 +24,13 @@ class Config:
     postgres_url: str
 
     # Optional fields (with defaults) - must come last
+    # SQL Server connection - use either:
+    # 1. MSSQL_SERVER="10.0.2.100,1433" (preferred for IP addresses)
+    # 2. MSSQL_HOST + MSSQL_PORT separately
+    mssql_server: str = ""  # Full server string like "10.0.2.100,1433"
+    mssql_host: str = ""
+    mssql_port: int = 1433
+
     s3_region: str = "us-east-1"
     sync_interval_seconds: int = 60
     batch_size: int = 10000
@@ -34,11 +39,18 @@ class Config:
     )
     log_level: str = "INFO"
 
+    def get_server_string(self) -> str:
+        """Get SQL Server connection string (host,port format)."""
+        if self.mssql_server:
+            return self.mssql_server
+        return f"{self.mssql_host},{self.mssql_port}"
+
     @classmethod
     def from_env(cls) -> "Config":
         """Load configuration from environment variables."""
         return cls(
-            mssql_host=os.getenv("MSSQL_HOST"),
+            mssql_server=os.getenv("MSSQL_SERVER", ""),
+            mssql_host=os.getenv("MSSQL_HOST", ""),
             mssql_port=int(os.getenv("MSSQL_PORT", "1433")),
             mssql_database=os.getenv("MSSQL_DATABASE"),
             mssql_username=os.getenv("MSSQL_USERNAME"),

@@ -22,9 +22,12 @@ class SQLServerConnector:
 
     def connect(self) -> None:
         """Initialize database connection."""
+        # Get server string (supports both "host,port" and separate host/port)
+        server = self.config.get_server_string()
+
         connection_string = (
             f"mssql+pyodbc://{self.config.mssql_username}:{self.config.mssql_password}"
-            f"@{self.config.mssql_host}:{self.config.mssql_port}"
+            f"@{server}"
             f"/{self.config.mssql_database}"
             f"?driver=ODBC+Driver+18+for+SQL+Server"
             f"&TrustServerCertificate=yes"
