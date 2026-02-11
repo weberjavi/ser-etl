@@ -1,7 +1,7 @@
 """Configuration management for ETL service."""
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 
@@ -9,28 +9,29 @@ from typing import List
 class Config:
     """Application configuration."""
 
+    # Required fields (no defaults) - must come first
     # SQL Server
     mssql_host: str
-    mssql_port: int
     mssql_database: str
     mssql_username: str
     mssql_password: str
+    mssql_port: int
 
     # AWS S3
     aws_access_key_id: str
     aws_secret_access_key: str
     s3_bucket: str
-    s3_region: str = "us-east-1"
 
     # PostgreSQL (state tracking)
     postgres_url: str
 
-    # Sync settings
+    # Optional fields (with defaults) - must come last
+    s3_region: str = "us-east-1"
     sync_interval_seconds: int = 60
     batch_size: int = 10000
-    tables_to_sync: List[str] = None
-
-    # Logging
+    tables_to_sync: List[str] = field(
+        default_factory=lambda: ["inventory", "products", "orders"]
+    )
     log_level: str = "INFO"
 
     @classmethod
@@ -46,7 +47,7 @@ class Config:
             aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
             s3_bucket=os.getenv("S3_BUCKET"),
             s3_region=os.getenv("S3_REGION", "us-east-1"),
-            postgres_url=os.getenv("DATABASE_URL"),  # Railway provides this
+            postgres_url=os.getenv("DATABASE_URL"),
             sync_interval_seconds=int(os.getenv("SYNC_INTERVAL_SECONDS", "60")),
             batch_size=int(os.getenv("BATCH_SIZE", "10000")),
             tables_to_sync=os.getenv(
